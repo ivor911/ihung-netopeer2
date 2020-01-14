@@ -1,0 +1,17 @@
+<netconf-client>
+ <editor>vi</editor>
+ <output-format>xml</output-format>
+ <authentication>
+  <pref>
+   <publickey>1</publickey>
+   <password>0</password>
+   <interactive>0</interactive>
+  </pref>
+  <keys>
+   <pair>
+    <public>/root/.ssh/id_rsa.pub</public>
+    <private>/root/.ssh/id_rsa</private>
+   </pair>
+  </keys>
+ </authentication>
+</netconf-client>
