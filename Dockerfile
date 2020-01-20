@@ -4,6 +4,9 @@ FROM ubuntu:18.04 as intermediate
 
 SHELL ["/bin/bash", "-c"]
 MAINTAINER ivor911@gmail.com
+
+ENV APP_NAME=netconf-yang
+ENV INSTALL_APP_DIR="/$APP_NAME"
 ENV DEBIAN_FRONTEND noninteractive
 ENV IUSER=rbbn
 ENV IGROUP=rbbn
@@ -33,27 +36,23 @@ FROM ubuntu:18.04
 
 SHELL ["/bin/bash", "-c"]
 MAINTAINER ivor911@gmail.com
+ENV APP_NAME=netconf-yang
+ENV INSTALL_APP_DIR="/$APP_NAME"
 ENV DEBIAN_FRONTEND noninteractive
 ENV IUSER=rbbn
 ENV IGROUP=rbbn
 ENV IUID=22345
 ENV IGID=22345
 
-COPY --from=intermediate /hicn-root /hicn-root
-COPY --from=intermediate /etc/ld.so.conf.d/hicn-root.conf /etc/ld.so.conf.d/hicn-root.conf
+COPY --from=intermediate "$INSTALL_APP_DIR" "$INSTALL_APP_DIR"
+COPY --from=intermediate /etc/ld.so.conf.d/ld-"$APP_NAME".conf /etc/ld.so.conf.d/ld-"$APP_NAME".conf
 RUN ldconfig
-RUN mkdir -p /hicn-root/lib/sysrepo/plugins/
-#COPY --from=intermediate /hicn-build/sysrepo/  /hicn-build/sysrepo/
-#COPY --from=intermediate /hicn-build/hicn  /hicn-build/hicn
+RUN mkdir -p "$INSTALL_APP_DIR"/lib/sysrepo/plugins/
 
 RUN apt-get update && apt-get install -y curl libprotobuf-c-dev libev-dev libavl-dev libssh-dev
-#RUN curl -s https://packagecloud.io/install/repositories/fdio/release/script.deb.sh | bash
-#RUN apt-get update && apt-get install -y supervisor vpp libvppinfra vpp-plugin-core vpp-dev libhicn-dev
 RUN apt-get update && apt-get install -y supervisor
 
 WORKDIR /
-COPY 02_setup.sh /
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 ########################################################################################################## 
 # create user and prepare keys
@@ -62,10 +61,10 @@ RUN mkdir -p /root/.ssh; \
 	mkdir -p /run/sshd
 
 COPY ./netopeer2-all-build/.netopeer2-cli /root/.netopeer2-cli
-COPY ./rbbn-id_rsa.pub     /root/.ssh/authorized_keys
-COPY ./rbbn-id_rsa.pub     /root/.ssh/id_rsa.pub
-COPY ./rbbn-id_rsa.pub.pem /root/.ssh/id_rsa.pub.pem
-COPY ./rbbn-id_rsa         /root/.ssh/id_rsa
+COPY ./keys/rbbn-id_rsa.pub     /root/.ssh/authorized_keys
+COPY ./keys/rbbn-id_rsa.pub     /root/.ssh/id_rsa.pub
+COPY ./keys/rbbn-id_rsa.pub.pem /root/.ssh/id_rsa.pub.pem
+COPY ./keys/rbbn-id_rsa         /root/.ssh/id_rsa
 RUN \
      chown -R  root:root /root/.ssh ; \
      chmod 700 /root/.ssh ; \
@@ -81,10 +80,10 @@ RUN groupadd --gid "$IGID" "$IGROUP" ;\
 	mkdir -p /home/rbbn/.netopeer2-cli
 
 COPY ./netopeer2-all-build/.netopeer2-cli /home/rbbn/.netopeer2-cli
-COPY ./rbbn-id_rsa.pub     /home/rbbn/.ssh/authorized_keys
-COPY ./rbbn-id_rsa.pub     /home/rbbn/.ssh/id_rsa.pub
-COPY ./rbbn-id_rsa.pub.pem /home/rbbn/.ssh/id_rsa.pub.pem
-COPY ./rbbn-id_rsa         /home/rbbn/.ssh/id_rsa
+COPY ./keys/rbbn-id_rsa.pub     /home/rbbn/.ssh/authorized_keys
+COPY ./keys/rbbn-id_rsa.pub     /home/rbbn/.ssh/id_rsa.pub
+COPY ./keys/rbbn-id_rsa.pub.pem /home/rbbn/.ssh/id_rsa.pub.pem
+COPY ./keys/rbbn-id_rsa         /home/rbbn/.ssh/id_rsa
 
 RUN \
      chown -R rbbn:rbbn /home/rbbn ; \
@@ -94,5 +93,22 @@ RUN \
      chmod 600 /home/rbbn/.ssh/id_rsa.pub; \
      chmod 600 /home/rbbn/.ssh/id_rsa.pub.pem
 
-CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]
+########################################################################################################## 
+# setup netconf/yang
+#COPY setup.sh "$INSTALL_APP_DIR"/bin/
+#RUN bash "$INSTALL_APP_DIR"/bin/setup.sh "$INSTALL_APP_DIR"/bin/sysrepoctl /netconf-yang/yang root
+RUN bash "$INSTALL_APP_DIR"/bin/merge_hostkey.sh "$INSTALL_APP_DIR"/bin/sysrepocfg openssl
+RUN bash "$INSTALL_APP_DIR"/bin/merge_config.sh  "$INSTALL_APP_DIR"/bin/sysrepocfg genkey
+
+########################################################################################################## 
+# Copy import and ctrl files
+RUN mkdir -p /import_files ; \
+    mkdir -p /ctrl
+COPY ./import_files /import_files
+COPY ./ctrl /ctrl
+RUN touch /root/.bashrc \
+ && cat /import_files/bashrc.import >> /root/.bashrc
+
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+#CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]
 

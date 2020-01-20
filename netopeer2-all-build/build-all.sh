@@ -124,6 +124,9 @@ if [ "${I_04_NETOPEER2_BUILD}" = "ENABLE" ]; then
 	make
 	make install
 	popd
+	#copy server scripts
+	cp ./${DIR_NETOPEER2}/server/*.sh ${INSTALL_APP_DIR}/bin
+	chmod +x ${INSTALL_APP_DIR}/bin/*.sh
 	ldconfig_update
 
 	#cli
