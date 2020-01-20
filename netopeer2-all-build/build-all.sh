@@ -1,5 +1,6 @@
 #!/bin/bash
-INSTALL_ROOT="/hicn-root"
+APP_NAME="netconf-yang"
+INSTALL_APP_DIR="/${APP_NAME}"
 
 PATH_PWD="`pwd`"
 PATH_LIBYANG="${PATH_PWD}/01_libyang"
@@ -27,15 +28,15 @@ I_04_NETOPEER2_BUILD="ENABLE"
 
 function ldconfig_update()
 {
-	echo "${INSTALL_ROOT}/lib" > /etc/ld.so.conf.d/hicn-root.conf
+	echo "${INSTALL_APP_DIR}/lib" > /etc/ld.so.conf.d/ld-${APP_NAME}.conf
 	ldconfig
 }
 
 
 
-#00_hicn-root
+#00_APP
 
-mkdir -p ${INSTALL_ROOT}
+mkdir -p ${INSTALL_APP_DIR}
 
 #01_libyang
 if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
@@ -47,7 +48,7 @@ if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
 	tar -zxvf ./${TARBALL_LIBYANG}
 	mkdir -p ${DIR_LIBYANG}/build
 	pushd ${DIR_LIBYANG}/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT} ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
 	make
 	make install
 	popd
@@ -66,8 +67,8 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 
 	#############################################################
 	# patching
-	# sed -i 's/\/etc\/sysrepo/\/hicn-root/' CMakeLists.txt
-	#sed -i "s/\/etc\/sysrepo/\${INSTALL_ROOT}/" CMakeLists.txt
+	# sed -i 's/\/etc\/sysrepo/\/netconf-yang/' CMakeLists.txt
+	#sed -i "s/\/etc\/sysrepo/\${INSTALL_APP_DIR}/" CMakeLists.txt
 	pushd ${DIR_SYSREPO}
 	patch -p2 < ${F_PATCH_SYSREPO}
 	popd
@@ -75,12 +76,12 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	mkdir -p ${DIR_SYSREPO}/build
 	pushd ${DIR_SYSREPO}/build
 	cmake -DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT} \
-	-DCMAKE_INCLUDE_PATH=${INSTALL_ROOT}/include \
-	-DCMAKE_LIBRARY_PATH=${INSTALL_ROOT}/lib \
-	-DLIBYANG_INCLUDE_DIR=${INSTALL_ROOT}/include \
-	-DLIBYANG_LIBRARY=${INSTALL_ROOT}/lib/libyang.so \
-	-DREPOSITORY_LOC=${INSTALL_ROOT} -DREPO_PATH=${INSTALL_ROOT} ..
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} \
+	-DCMAKE_INCLUDE_PATH=${INSTALL_APP_DIR}/include \
+	-DCMAKE_LIBRARY_PATH=${INSTALL_APP_DIR}/lib \
+	-DLIBYANG_INCLUDE_DIR=${INSTALL_APP_DIR}/include \
+	-DLIBYANG_LIBRARY=${INSTALL_APP_DIR}/lib/libyang.so \
+	-DREPOSITORY_LOC=${INSTALL_APP_DIR} -DREPO_PATH=${INSTALL_APP_DIR} ..
 	make
 	make install
 	popd
@@ -98,7 +99,7 @@ if [ "${I_03_LIBNETCONF2_BUILD}" = "ENABLE" ]; then
 	tar -zxvf ./${TARBALL_LIBNETCONF2}
 	mkdir -p ${DIR_LIBNETCONF2}/build
 	pushd ${DIR_LIBNETCONF2}/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT} ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
 	make
 	make install
 	popd
@@ -119,7 +120,7 @@ if [ "${I_04_NETOPEER2_BUILD}" = "ENABLE" ]; then
 	#server
 	mkdir -p ${DIR_NETOPEER2}/server/build
 	pushd ${DIR_NETOPEER2}/server/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT} ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
 	make
 	make install
 	popd
@@ -128,7 +129,7 @@ if [ "${I_04_NETOPEER2_BUILD}" = "ENABLE" ]; then
 	#cli
 	mkdir -p ${DIR_NETOPEER2}/cli/build
 	pushd ${DIR_NETOPEER2}/cli/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_ROOT} ..
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
 	make
 	make install
 	popd
