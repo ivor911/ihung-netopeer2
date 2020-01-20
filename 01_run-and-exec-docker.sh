@@ -1,6 +1,6 @@
 #!/bin/sh
 MYDOCKER_REPO="ihung-netopeer2"
-MYTAG="icnteam-vswitch"
+MYTAG=`git branch | grep \* | cut -d ' ' -f2-`
 MYDOCKER_NAME="ihung-netopeer2"
 #docker run -e AUTHORIZED_KEYS=/root/.ssh/authorized_keys -dit --publish 22222:22 --name $MYDOCKER  $MYDOCKER:latest
 docker run -dit --publish 830:830 --name $MYDOCKER_NAME  $MYDOCKER_REPO:$MYTAG
