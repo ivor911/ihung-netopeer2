@@ -25,6 +25,14 @@ I_02_SYSREPO_BUILD="ENABLE"
 I_03_LIBNETCONF2_BUILD="ENABLE"
 I_04_NETOPEER2_BUILD="ENABLE"
 
+function pkg_config_path()
+{
+	if [ -z "${PKG_CONFIG_PATH}" ]; then
+		export PKG_CONFIG_PATH="/netconf-yang/lib/pkgconfig"
+	else
+		export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/netconf-yang/lib/pkgconfig"
+	fi
+}
 
 function ldconfig_update()
 {
@@ -37,6 +45,7 @@ function ldconfig_update()
 #00_APP
 
 mkdir -p ${INSTALL_APP_DIR}
+pkg_config_path
 
 #01_libyang
 if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
@@ -48,7 +57,11 @@ if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
 	tar -zxvf ./${TARBALL_LIBYANG}
 	mkdir -p ${DIR_LIBYANG}/build
 	pushd ${DIR_LIBYANG}/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
+	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} \
+	-DGEN_LANGUAGE_BINDINGS=ON \
+	-DGEN_CPP_BINDINGS=ON \
+	-DGEN_PYTHON_BINDINGS=ON ..
 	make
 	make install
 	popd
@@ -81,6 +94,9 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	-DCMAKE_LIBRARY_PATH=${INSTALL_APP_DIR}/lib \
 	-DLIBYANG_INCLUDE_DIR=${INSTALL_APP_DIR}/include \
 	-DLIBYANG_LIBRARY=${INSTALL_APP_DIR}/lib/libyang.so \
+	-DGEN_LANGUAGE_BINDINGS=ON \
+	-DGEN_CPP_BINDINGS=ON \
+	-DGEN_PYTHON_BINDINGS=ON \
 	-DREPOSITORY_LOC=${INSTALL_APP_DIR} -DREPO_PATH=${INSTALL_APP_DIR} ..
 	make
 	make install
