@@ -1,5 +1,6 @@
-# ihung-netopeer2:icnteam-vswitch
+# ihung-netopeer2:multi-arch
 A exercise build for complete netopeer2 in docker.
-Ref. https://github.com/icn-team/vSwitch
-Use multiple stage dockerfile to implement final docker images.
+
+This branch is prepared for multi-arch build.
+
 
