@@ -1,5 +1,4 @@
-# ihung-netopeer2:icnteam-vswitch
+# ihung-netopeer2:kea-port
 A exercise build for complete netopeer2 in docker.
-Ref. https://github.com/icn-team/vSwitch
-Use multiple stage dockerfile to implement final docker images.
 
+kea-port branch is prepared for test with ISC-Kea.
