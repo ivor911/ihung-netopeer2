@@ -102,11 +102,9 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	make
 	make install
 	if [ "${I_02_SYSREPO_EXAMPLE_COPY}" = "ENABLE" ]; then
-		pushd ${DIR_SYSREPO}/build/examples/
 		mkdir -p ${INSTALL_APP_DIR}/sysrepo_examples
-		cp *_example  ${INSTALL_APP_DIR}/sysrepo_examples
-		cp liboven.so ${INSTALL_APP_DIR}/lib
-		popd
+		cp ./examples/*_example  ${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/liboven.so ${INSTALL_APP_DIR}/lib
 	fi
 	popd
 
