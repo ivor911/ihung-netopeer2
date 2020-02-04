@@ -26,6 +26,11 @@ I_02_SYSREPO_EXAMPLE_COPY="ENABLE"
 I_03_LIBNETCONF2_BUILD="ENABLE"
 I_04_NETOPEER2_BUILD="ENABLE"
 
+
+GEN_I_EXP_YANG_FILE="./examples/building@2018-01-22.yang"
+GEN_I_EXP_XML_FILE="./examples/building-import.xml"
+GEN_I_EXP_README_FILE="./examples/README"
+
 function pkg_config_path()
 {
 	if [ -z "${PKG_CONFIG_PATH}" ]; then
@@ -41,6 +46,69 @@ function ldconfig_update()
 	ldconfig
 }
 
+function generate_myexamples()
+{
+cat << EOF > ${GEN_I_EXP_README_FILE}
+Ref:
+	* Install a YANG model
+		https://asciinema.org/a/160037
+	* How to run a Sysrepo application
+	https://asciinema.org/a/160090
+
+	# install module
+	  $ sysrepoctl -i /netconf-yang/sysrepo_examples/building@2018-01-20.yang -p 666
+	  $ sysrepoctl -l | grep building
+
+	# run a sysrepo example application
+	  $ /netconf-yang/sysrepo_examples/application_changes_example building
+
+	# remove module
+	  $ sysrepoctl -u building
+
+    #################################################################################
+	$ apt-get update; apt-get -y install net-tools vim less tree
+	$ sysrepocfg --edit=vim -d running --module=building
+	$ sysrepocfg --edit=vim -d startup --module=building
+	$ sysrepocfg --import=/netconf-yang/sysrepo_examples/building-import.xml
+
+EOF
+cat << EOF > ${GEN_I_EXP_XML_FILE}
+<rooms xmlns="urn:building:test">
+  <room>
+    <room-number>10</room-number>
+    <size>100</size>
+  </room>
+</rooms>
+EOF
+cat << EOF > ${GEN_I_EXP_YANG_FILE}
+module building {
+  yang-version 1;
+  namespace "urn:building:test";
+
+  prefix bld;
+
+  organization "building";
+  contact "building address";
+  description "yang model for buildings";
+  revision "2018-01-22" {
+    description "initial revision";
+  }
+  // now we can add data nodes
+
+  container rooms {
+    list room {
+	  key room-number;
+      leaf room-number {
+        type uint16;
+      }
+      leaf size {
+        type uint32;
+      }
+    }
+  }
+}
+EOF
+}
 
 
 #00_APP
@@ -106,6 +174,10 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 		cp ./examples/*_example			${INSTALL_APP_DIR}/sysrepo_examples
 		cp ./examples/liboven.so		${INSTALL_APP_DIR}/lib
 		cp ../examples/examples.yang	${INSTALL_APP_DIR}/sysrepo_examples
+		generate_myexamples
+		cp ${GEN_I_EXP_YANG_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
+		cp ${GEN_I_EXP_XML_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
+		cp ${GEN_I_EXP_README_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
 	fi
 	popd
 
