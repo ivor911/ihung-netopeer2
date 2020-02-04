@@ -103,8 +103,9 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	make install
 	if [ "${I_02_SYSREPO_EXAMPLE_COPY}" = "ENABLE" ]; then
 		mkdir -p ${INSTALL_APP_DIR}/sysrepo_examples
-		cp ./examples/*_example  ${INSTALL_APP_DIR}/sysrepo_examples
-		cp ./examples/liboven.so ${INSTALL_APP_DIR}/lib
+		cp ./examples/*_example			${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/liboven.so		${INSTALL_APP_DIR}/lib
+		cp ../examples/examples.yang	${INSTALL_APP_DIR}/sysrepo_examples
 	fi
 	popd
 
