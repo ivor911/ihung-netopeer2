@@ -22,6 +22,7 @@ DIR_NETOPEER2="Netopeer2-1.1.1"
 
 I_01_LIBYANG_BUILD="ENABLE"
 I_02_SYSREPO_BUILD="ENABLE"
+I_02_SYSREPO_EXAMPLE_COPY="ENABLE"
 I_03_LIBNETCONF2_BUILD="ENABLE"
 I_04_NETOPEER2_BUILD="ENABLE"
 
@@ -100,6 +101,13 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	-DREPOSITORY_LOC=${INSTALL_APP_DIR} -DREPO_PATH=${INSTALL_APP_DIR} ..
 	make
 	make install
+	if [ "${I_02_SYSREPO_EXAMPLE_COPY}" = "ENABLE" ]; then
+		pushd ${DIR_SYSREPO}/build/examples/
+		mkdir -p ${INSTALL_APP_DIR}/sysrepo_examples
+		cp *_example  ${INSTALL_APP_DIR}/sysrepo_examples
+		cp liboven.so ${INSTALL_APP_DIR}/lib
+		popd
+	fi
 	popd
 
 	ldconfig_update
