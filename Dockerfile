@@ -44,13 +44,18 @@ ENV IGROUP=rbbn
 ENV IUID=22345
 ENV IGID=22345
 
-COPY --from=intermediate "$INSTALL_APP_DIR" "$INSTALL_APP_DIR"
-COPY --from=intermediate /etc/ld.so.conf.d/ld-"$APP_NAME".conf /etc/ld.so.conf.d/ld-"$APP_NAME".conf
+RUN apt-get update && apt-get install -y curl libprotobuf-c-dev libev-dev libavl-dev libssh-dev python python-pip python3 python3-pip
+RUN apt-get update && apt-get install -y supervisor
+
+COPY --from=intermediate "$INSTALL_APP_DIR"                         "$INSTALL_APP_DIR"
+COPY --from=intermediate /usr/lib/python3/dist-packages/_yang.so    /usr/lib/python3/dist-packages/_yang.so
+COPY --from=intermediate /usr/lib/python3/dist-packages/yang.py     /usr/lib/python3/dist-packages/yang.py
+COPY --from=intermediate /usr/lib/python3/dist-packages/_sysrepo.so /usr/lib/python3/dist-packages/_sysrepo.so
+COPY --from=intermediate /usr/lib/python3/dist-packages/sysrepo.py  /usr/lib/python3/dist-packages/sysrepo.py
+COPY --from=intermediate /etc/ld.so.conf.d/ld-"$APP_NAME".conf      /etc/ld.so.conf.d/ld-"$APP_NAME".conf
 RUN ldconfig
 RUN mkdir -p "$INSTALL_APP_DIR"/lib/sysrepo/plugins/
 
-RUN apt-get update && apt-get install -y curl libprotobuf-c-dev libev-dev libavl-dev libssh-dev
-RUN apt-get update && apt-get install -y supervisor
 
 WORKDIR /
 
