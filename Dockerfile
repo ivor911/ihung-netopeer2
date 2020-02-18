@@ -109,7 +109,9 @@ RUN bash "$INSTALL_APP_DIR"/bin/merge_config.sh  "$INSTALL_APP_DIR"/bin/sysrepoc
 # Copy import and ctrl files
 RUN mkdir -p /import_files ; \
     mkdir -p /ctrl
-COPY ./import_files /import_files
+COPY ./import_files                                    /import_files
+COPY ./import_files/ihung_call-sr_get_items_example.sh /netconf-yang/sysrepo_examples
+COPY ./import_files/ihung_monitor.sh                   /netconf-yang/sysrepo_examples
 COPY ./ctrl /ctrl
 RUN touch /root/.bashrc \
  && cat /import_files/bashrc.import >> /root/.bashrc
