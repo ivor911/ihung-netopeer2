@@ -10,7 +10,7 @@ update_ip()
 	#XPATH_PREFIX=`./sr_get_items_example "/ietf-interfaces:interfaces/interface[name='eth2']/ietf-ip:ipv4/address/*"  running  | awk -F "prefix-length = " '/1/ {print $2}' |  awk NF`
 	#echo "${XPATH_IP}/${XPATH_PREFIX}" > ./ip.txt
 
-    ./call-sr_get_items_example.sh
+    ./ihung_call-sr_get_items_example.sh
 	NOW_ADDR="`cat ip.txt`"
 }
 
