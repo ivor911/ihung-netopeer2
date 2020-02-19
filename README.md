@@ -13,7 +13,8 @@ yang-port branch is prepared for our YANG modules develop.
 
 or  ./02_run-and-exec-docker_priv-netHost.sh
 
-#Start netopeer2-server daemon after go in netconf/yang docker
+
+# Start netopeer2-server daemon after go in netconf/yang docker
 
 cd /import_files
 
