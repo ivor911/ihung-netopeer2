@@ -3,10 +3,11 @@ A exercise build for complete netopeer2 in docker.
 
 yang-port branch is prepared for our YANG modules develop.
 
-Reference
-	* Open-Config
-                 http://openconfig.net
-                 https://github.com/openconfig/public
+Run
+./00_build-docker-image.sh
+./01_run-and-exec-docker.sh
+or./02_run-and-exec-docker_priv-netHost.sh
 
-	* IETF standards-track YANG modules
-                 https://github.com/YangModels/yang
+Start netopeer2-server daemon After go in docker, 
+cd /import_files
+./start-netconf2.sh
