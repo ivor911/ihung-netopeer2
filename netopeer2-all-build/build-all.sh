@@ -1,9 +1,11 @@
 #!/bin/bash
+APP_NAME="netconf-yang"
+INSTALL_APP_DIR="/${APP_NAME}"
 
 PATH_PWD="`pwd`"
 PATH_LIBYANG="${PATH_PWD}/01_libyang"
-PATH_LIBNETCONF2="${PATH_PWD}/02_libnetconf2"
-PATH_SYSREPO="${PATH_PWD}/03_sysrepo"
+PATH_SYSREPO="${PATH_PWD}/02_sysrepo"
+PATH_LIBNETCONF2="${PATH_PWD}/03_libnetconf2"
 PATH_NETOPEER2="${PATH_PWD}/04_Netopeer2"
 
 TARBALL_LIBYANG="libyang-1.0.109.tar.gz"
@@ -11,15 +13,108 @@ TARBALL_LIBNETCONF2="libnetconf2-1.1.3.tar.gz"
 TARBALL_SYSREPO="sysrepo-1.3.21.tar.gz"
 TARBALL_NETOPEER2="Netopeer2-1.1.1.tar.gz"
 
+F_PATCH_SYSREPO="${PATH_SYSREPO}/sysrepo-1.3.21.patch"
+
 DIR_LIBYANG="libyang-1.0.109"
 DIR_LIBNETCONF2="libnetconf2-1.1.3"
 DIR_SYSREPO="sysrepo-1.3.21"
 DIR_NETOPEER2="Netopeer2-1.1.1"
 
 I_01_LIBYANG_BUILD="ENABLE"
-I_02_LIBNETCONF2_BUILD="ENABLE"
-I_03_SYSREPO_BUILD="ENABLE"
+I_02_SYSREPO_BUILD="ENABLE"
+I_02_SYSREPO_EXAMPLE_COPY="ENABLE"
+I_03_LIBNETCONF2_BUILD="ENABLE"
 I_04_NETOPEER2_BUILD="ENABLE"
+
+
+GEN_I_EXP_YANG_FILE="./examples/building@2018-01-22.yang"
+GEN_I_EXP_XML_FILE="./examples/building-import.xml"
+GEN_I_EXP_README_FILE="./examples/README"
+
+function pkg_config_path()
+{
+	if [ -z "${PKG_CONFIG_PATH}" ]; then
+		export PKG_CONFIG_PATH="/netconf-yang/lib/pkgconfig"
+	else
+		export PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/netconf-yang/lib/pkgconfig"
+	fi
+}
+
+function ldconfig_update()
+{
+	echo "${INSTALL_APP_DIR}/lib" > /etc/ld.so.conf.d/ld-${APP_NAME}.conf
+	ldconfig
+}
+
+function generate_myexamples()
+{
+cat << EOF > ${GEN_I_EXP_README_FILE}
+Ref:
+	* Install a YANG model
+		https://asciinema.org/a/160037
+	* How to run a Sysrepo application
+	https://asciinema.org/a/160090
+
+	# install module
+	  $ sysrepoctl -i /netconf-yang/sysrepo_examples/building@2018-01-20.yang -p 666
+	  $ sysrepoctl -l | grep building
+
+	# run a sysrepo example application
+	  $ /netconf-yang/sysrepo_examples/application_changes_example building
+
+	# remove module
+	  $ sysrepoctl -u building
+
+    #################################################################################
+	$ apt-get update; apt-get -y install net-tools vim less tree
+	$ sysrepocfg --edit=vim -d running --module=building
+	$ sysrepocfg --edit=vim -d startup --module=building
+	$ sysrepocfg --import=/netconf-yang/sysrepo_examples/building-import.xml
+
+EOF
+cat << EOF > ${GEN_I_EXP_XML_FILE}
+<rooms xmlns="urn:building:test">
+  <room>
+    <room-number>10</room-number>
+    <size>100</size>
+  </room>
+</rooms>
+EOF
+cat << EOF > ${GEN_I_EXP_YANG_FILE}
+module building {
+  yang-version 1;
+  namespace "urn:building:test";
+
+  prefix bld;
+
+  organization "building";
+  contact "building address";
+  description "yang model for buildings";
+  revision "2018-01-22" {
+    description "initial revision";
+  }
+  // now we can add data nodes
+
+  container rooms {
+    list room {
+	  key room-number;
+      leaf room-number {
+        type uint16;
+      }
+      leaf size {
+        type uint32;
+      }
+    }
+  }
+}
+EOF
+}
+
+
+#00_APP
+
+mkdir -p ${INSTALL_APP_DIR}
+pkg_config_path
 
 #01_libyang
 if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
@@ -29,48 +124,82 @@ if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
 
 	cd ${PATH_LIBYANG}
 	tar -zxvf ./${TARBALL_LIBYANG}
-	cd ${DIR_LIBYANG}
-	mkdir build
-	cd build
-	cmake ..
+	mkdir -p ${DIR_LIBYANG}/build
+	pushd ${DIR_LIBYANG}/build
+	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} \
+	-DGEN_LANGUAGE_BINDINGS=ON \
+	-DGEN_CPP_BINDINGS=ON \
+	-DGEN_PYTHON_BINDINGS=ON ..
 	make
 	make install
-	ldconfig
+	popd
+
+	ldconfig_update
 fi
 
-
-#02_libnetconf2
-if [ "${I_02_LIBNETCONF2_BUILD}" = "ENABLE" ]; then
-
-	printf "${PATH_LIBNETCONF2} \n"
-	rm -fr "${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}"
-
-	cd ${PATH_LIBNETCONF2}
-	tar -zxvf ./${TARBALL_LIBNETCONF2}
-	cd ${DIR_LIBNETCONF2}
-	mkdir build
-	cd build
-	cmake ..
-	make
-	make install
-	ldconfig
-fi
-
-#03_sysrepo
-if [ "${I_03_SYSREPO_BUILD}" = "ENABLE" ]; then
+#02_sysrepo
+if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 
 	printf "${PATH_SYSREPO} \n"
 	rm -fr "${PATH_SYSREPO}/${DIR_SYSREPO}"
 
 	cd ${PATH_SYSREPO}
 	tar -zxvf ./${TARBALL_SYSREPO}
-	cd ${DIR_SYSREPO}
-	mkdir build
-	cd build
-	cmake ..
+
+	#############################################################
+	# patching
+	# sed -i 's/\/etc\/sysrepo/\/netconf-yang/' CMakeLists.txt
+	#sed -i "s/\/etc\/sysrepo/\${INSTALL_APP_DIR}/" CMakeLists.txt
+	pushd ${DIR_SYSREPO}
+	patch -p2 < ${F_PATCH_SYSREPO}
+	popd
+	
+	mkdir -p ${DIR_SYSREPO}/build
+	pushd ${DIR_SYSREPO}/build
+	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} \
+	-DCMAKE_INCLUDE_PATH=${INSTALL_APP_DIR}/include \
+	-DCMAKE_LIBRARY_PATH=${INSTALL_APP_DIR}/lib \
+	-DLIBYANG_INCLUDE_DIR=${INSTALL_APP_DIR}/include \
+	-DLIBYANG_LIBRARY=${INSTALL_APP_DIR}/lib/libyang.so \
+	-DGEN_LANGUAGE_BINDINGS=ON \
+	-DGEN_CPP_BINDINGS=ON \
+	-DGEN_PYTHON_BINDINGS=ON \
+	-DREPOSITORY_LOC=${INSTALL_APP_DIR} -DREPO_PATH=${INSTALL_APP_DIR} ..
 	make
 	make install
-	ldconfig
+	if [ "${I_02_SYSREPO_EXAMPLE_COPY}" = "ENABLE" ]; then
+		mkdir -p ${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/*_example			${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/liboven.so		${INSTALL_APP_DIR}/lib
+		cp ../examples/examples.yang	${INSTALL_APP_DIR}/sysrepo_examples
+		generate_myexamples
+		cp ${GEN_I_EXP_YANG_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
+		cp ${GEN_I_EXP_XML_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
+		cp ${GEN_I_EXP_README_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
+	fi
+	popd
+
+	ldconfig_update
+fi
+
+#03_libnetconf2
+if [ "${I_03_LIBNETCONF2_BUILD}" = "ENABLE" ]; then
+
+	printf "${PATH_LIBNETCONF2} \n"
+	rm -fr "${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}"
+
+	cd ${PATH_LIBNETCONF2}
+	tar -zxvf ./${TARBALL_LIBNETCONF2}
+	mkdir -p ${DIR_LIBNETCONF2}/build
+	pushd ${DIR_LIBNETCONF2}/build
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
+	make
+	make install
+	popd
+
+	ldconfig_update
 fi
 
 #04_Netopeer2
@@ -82,22 +211,26 @@ if [ "${I_04_NETOPEER2_BUILD}" = "ENABLE" ]; then
 	cd ${PATH_NETOPEER2}
 	tar -zxvf ./${TARBALL_NETOPEER2}
 
+
 	#server
-	cd ${DIR_NETOPEER2}/server
-	mkdir build
-	cd build
-	cmake ..
+	mkdir -p ${DIR_NETOPEER2}/server/build
+	pushd ${DIR_NETOPEER2}/server/build
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
 	make
 	make install
-	ldconfig
+	popd
+	#copy server scripts
+	cp ./${DIR_NETOPEER2}/server/*.sh ${INSTALL_APP_DIR}/bin
+	chmod +x ${INSTALL_APP_DIR}/bin/*.sh
+	ldconfig_update
 
 	#cli
-	cd ../../cli
-	mkdir build
-	cd build
-	cmake ..
+	mkdir -p ${DIR_NETOPEER2}/cli/build
+	pushd ${DIR_NETOPEER2}/cli/build
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
 	make
 	make install
-	ldconfig
-
+	popd
+	ldconfig_update
 fi
+
