@@ -7,6 +7,22 @@ MYTAG="${I_ARCH}"
 MYDOCKER_NAME="ihung-netopeer2"
 MYDOCKER_HOSTNAME="rbbn-docker-"
 
+case "$I_ARCH" in
+    x86_64)
+        MYTAG="latest"
+        ;;
+    aarch64)
+        MYTAG="aarch64-latest"
+        ;;
+    *)
+        echo "ERROR: We only support below architecture types."
+        echo "usage:"
+        echo "        $0 x86_64"
+        echo "        $0 aarch64"
+        exit 1
+        ;;
+esac
+
 #docker run -e AUTHORIZED_KEYS=/root/.ssh/authorized_keys -dit --publish 22222:22 --name $MYDOCKER  $MYDOCKER:latest
 #docker run -dit --publish 830:830 --name $MYDOCKER_NAME  $MYDOCKER_REPO:$MYTAG
 docker run -dit --privileged --net=host --hostname=$MYDOCKER_HOSTNAME --name $MYDOCKER_NAME  $MYDOCKER_REPO:$MYTAG
