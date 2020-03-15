@@ -1,9 +1,12 @@
 #!/bin/sh
 MYDOCKER_REPO="ihung-netopeer2"
 #MYTAG=`git branch | grep \* | cut -d ' ' -f2-`
-MYTAG="yang-port"
+#I_ARCH="$1"
+I_ARCH="`uname -m`"
+MYTAG="${I_ARCH}"
 MYDOCKER_NAME="ihung-netopeer2"
 MYDOCKER_HOSTNAME="rbbn-docker-"
+
 #docker run -e AUTHORIZED_KEYS=/root/.ssh/authorized_keys -dit --publish 22222:22 --name $MYDOCKER  $MYDOCKER:latest
 #docker run -dit --publish 830:830 --name $MYDOCKER_NAME  $MYDOCKER_REPO:$MYTAG
 docker run -dit --privileged --net=host --hostname=$MYDOCKER_HOSTNAME --name $MYDOCKER_NAME  $MYDOCKER_REPO:$MYTAG
