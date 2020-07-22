@@ -1,6 +1,6 @@
 diff -Naur ./libnetconf2-1.1.26/python/CMakeLists.txt ./libnetconf2-1.1.26.PATCH/python/CMakeLists.txt
---- ./libnetconf2-1.1.26/python/CMakeLists.txt	2020-06-02 14:09:38.000000000 +0000
-+++ ./libnetconf2-1.1.26.PATCH/python/CMakeLists.txt	2020-06-03 07:38:00.806474313 +0000
+--- ./libnetconf2-1.1.26/python/CMakeLists.txt	2020-06-02 22:09:38.000000000 +0800
++++ ./libnetconf2-1.1.26.PATCH/python/CMakeLists.txt	2020-07-23 01:19:37.925224981 +0800
 @@ -24,5 +24,5 @@
      add_custom_target(pyapidoc COMMAND make -f ${CMAKE_CURRENT_BINARY_DIR}/docs/Makefile html)
      execute_process(COMMAND ${PYTHON} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(plat_specific=True))"
@@ -8,9 +8,21 @@ diff -Naur ./libnetconf2-1.1.26/python/CMakeLists.txt ./libnetconf2-1.1.26.PATCH
 -    install(CODE "execute_process(COMMAND ${PYTHON} \"${SETUP_PY}\" build -b \"${PYAPI_BUILD_DIR}\" install --install-lib=\$ENV{DESTDIR}/\"${PYTHON_MODULE_PATH}\")")
 +    install(CODE "execute_process(COMMAND ${PYTHON} ${SETUP_PY} build -b ${PYAPI_BUILD_DIR} install --install-lib=\$ENV{DESTDIR}/${PYTHON_MODULE_PATH})")
  endif()
+diff -Naur ./libnetconf2-1.1.26/python/rpc.c ./libnetconf2-1.1.26.PATCH/python/rpc.c
+--- ./libnetconf2-1.1.26/python/rpc.c	2020-06-02 22:09:38.000000000 +0800
++++ ./libnetconf2-1.1.26.PATCH/python/rpc.c	2020-07-23 01:20:40.102638619 +0800
+@@ -275,7 +275,7 @@
+         goto error;
+     }
+ 
+-    rpc = nc_rpc_act_generic(data, NC_PARAMTYPE_FREE);
++    rpc = nc_rpc_act_generic(data, NC_PARAMTYPE_CONST);
+     data = NULL;
+     if (!rpc) {
+         goto error;
 diff -Naur ./libnetconf2-1.1.26/python/setup.py.in ./libnetconf2-1.1.26.PATCH/python/setup.py.in
---- ./libnetconf2-1.1.26/python/setup.py.in	2020-06-02 14:09:38.000000000 +0000
-+++ ./libnetconf2-1.1.26.PATCH/python/setup.py.in	2020-06-03 07:38:34.587044510 +0000
+--- ./libnetconf2-1.1.26/python/setup.py.in	2020-06-02 22:09:38.000000000 +0800
++++ ./libnetconf2-1.1.26.PATCH/python/setup.py.in	2020-07-23 01:19:37.925224981 +0800
 @@ -12,6 +12,8 @@
                                      "${CMAKE_CURRENT_SOURCE_DIR}/session.h",
                                      "${CMAKE_CURRENT_COURCE_DIR}/rpc.h"

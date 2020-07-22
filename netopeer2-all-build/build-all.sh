@@ -10,7 +10,23 @@ PATH_NETOPEER2="${PATH_PWD}/04_netopeer2"
 
 
 #############################################################
-#: <<'ReleaseAt20200507withNetopeer2Update'
+#: <<'ReleaseAt20200721'
+TARBALL_LIBYANG=libyang-1.0.184.tar.gz
+TARBALL_SYSREPO=sysrepo-1.4.70.tar.gz
+TARBALL_LIBNETCONF2=libnetconf2-1.1.26.tar.gz
+TARBALL_NETOPEER2=netopeer2-1.1.39.tar.gz
+DIR_LIBYANG=libyang-1.0.184
+DIR_SYSREPO=sysrepo-1.4.70
+DIR_LIBNETCONF2=libnetconf2-1.1.26
+DIR_NETOPEER2=netopeer2-1.1.39
+F_PATCH_LIBYANG=${PATH_LIBYANG}/${DIR_LIBYANG}.patch
+F_PATCH_SYSREPO=${PATH_SYSREPO}/${DIR_SYSREPO}.patch
+F_PATCH_LIBNETCONF2=${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}.patch
+F_PATCH_NETOPEER2=${PATH_NETOPEER2}/${DIR_NETOPEER2}.patch
+#ReleaseAt20200721
+#############################################################
+
+: <<'ReleaseAt20200507withNetopeer2Update'
 TARBALL_LIBYANG=libyang-1.0.167.tar.gz
 TARBALL_SYSREPO=sysrepo-1.4.58.tar.gz
 TARBALL_LIBNETCONF2=libnetconf2-1.1.24.tar.gz
@@ -23,9 +39,7 @@ F_PATCH_LIBYANG=${PATH_LIBYANG}/${DIR_LIBYANG}.patch
 F_PATCH_SYSREPO=${PATH_SYSREPO}/${DIR_SYSREPO}.patch
 F_PATCH_LIBNETCONF2=${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}.patch
 F_PATCH_NETOPEER2=${PATH_NETOPEER2}/${DIR_NETOPEER2}.patch
-#ReleaseAt20200507withNetopeer2Update
-#############################################################
-
+ReleaseAt20200507withNetopeer2Update
 
 : <<'ReleaseAt20191213'
 TARBALL_LIBYANG="libyang-1.0.109.tar.gz"
