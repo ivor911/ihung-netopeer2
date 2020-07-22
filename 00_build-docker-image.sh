@@ -1,4 +1,9 @@
 #!/bin/sh
+echo "##################################################" > "$0.LOG"
+echo "$0 $1. START time: " >> "$0.LOG"
+date >> "$0.LOG"
+echo "##################################################" >> "$0.LOG"
+
 MYDOCKER_REPO="ihung-netopeer2"
 #MYTAG=`git branch | grep \* | cut -d ' ' -f2-`
 I_ARCH="$1"
@@ -30,5 +35,9 @@ case "$I_ARCH" in
         ;;
 esac
 
-docker build --rm --no-cache -t $MYDOCKER_REPO:$MYTAG . 
+docker build --rm --no-cache -t $MYDOCKER_REPO:$MYTAG . 2>&1 | tee --append "$0.LOG"
 
+echo "##################################################" >> "$0.LOG"
+echo "$0 $1. END time: " >> "$0.LOG"
+date >> "$0.LOG"
+echo "##################################################" >> "$0.LOG"

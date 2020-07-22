@@ -1,0 +1,16 @@
+<interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+  <interface>
+    <name>eth2</name>
+    <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:iana-interface-type</type>
+    <enabled>true</enabled>
+    <ipv4 xmlns="urn:ietf:params:xml:ns:yang:ietf-ip">
+      <enabled>true</enabled>
+      <forwarding>true</forwarding>
+      <mtu>1460</mtu>
+      <address>
+        <ip>192.168.222.60</ip>
+        <prefix-length>24</prefix-length>
+      </address>
+    </ipv4>
+  </interface>
+</interfaces>

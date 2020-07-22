@@ -6,7 +6,7 @@ diff -Naur ./sysrepo-1.3.21/CMakeLists.txt ./sysrepo-1.3.21.PATCH/CMakeLists.txt
          set(REPO_PATH "${CMAKE_BINARY_DIR}/repository")
      else()
 -        set(REPO_PATH "/etc/sysrepo")
-+        set(REPO_PATH "/hicn-root")
++        set(REPO_PATH "/netconf-yang")
      endif()
  endif()
  set(REPO_PATH "${REPO_PATH}" CACHE PATH "Repository path, contains configuration schema and data files.")

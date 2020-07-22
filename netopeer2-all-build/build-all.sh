@@ -6,25 +6,86 @@ PATH_PWD="`pwd`"
 PATH_LIBYANG="${PATH_PWD}/01_libyang"
 PATH_SYSREPO="${PATH_PWD}/02_sysrepo"
 PATH_LIBNETCONF2="${PATH_PWD}/03_libnetconf2"
-PATH_NETOPEER2="${PATH_PWD}/04_Netopeer2"
+PATH_NETOPEER2="${PATH_PWD}/04_netopeer2"
 
+
+#############################################################
+#: <<'ReleaseAt20200507withNetopeer2Update'
+TARBALL_LIBYANG=libyang-1.0.167.tar.gz
+TARBALL_SYSREPO=sysrepo-1.4.58.tar.gz
+TARBALL_LIBNETCONF2=libnetconf2-1.1.24.tar.gz
+TARBALL_NETOPEER2=netopeer2-1.1.34.tar.gz
+DIR_LIBYANG=libyang-1.0.167
+DIR_SYSREPO=sysrepo-1.4.58
+DIR_LIBNETCONF2=libnetconf2-1.1.24
+DIR_NETOPEER2=netopeer2-1.1.34
+F_PATCH_LIBYANG=${PATH_LIBYANG}/${DIR_LIBYANG}.patch
+F_PATCH_SYSREPO=${PATH_SYSREPO}/${DIR_SYSREPO}.patch
+F_PATCH_LIBNETCONF2=${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}.patch
+F_PATCH_NETOPEER2=${PATH_NETOPEER2}/${DIR_NETOPEER2}.patch
+#ReleaseAt20200507withNetopeer2Update
+#############################################################
+
+
+: <<'ReleaseAt20191213'
 TARBALL_LIBYANG="libyang-1.0.109.tar.gz"
 TARBALL_LIBNETCONF2="libnetconf2-1.1.3.tar.gz"
 TARBALL_SYSREPO="sysrepo-1.3.21.tar.gz"
 TARBALL_NETOPEER2="Netopeer2-1.1.1.tar.gz"
 
 F_PATCH_SYSREPO="${PATH_SYSREPO}/sysrepo-1.3.21.patch"
+F_PATCH_LIBNETCONF2="${PATH_LIBNETCONF2}/libnetconf2-1.1.3.patch"
 
 DIR_LIBYANG="libyang-1.0.109"
 DIR_LIBNETCONF2="libnetconf2-1.1.3"
 DIR_SYSREPO="sysrepo-1.3.21"
 DIR_NETOPEER2="Netopeer2-1.1.1"
+ReleaseAt20191213
+
+: <<'ReleaseAt20200203'
+TARBALL_LIBYANG="libyang-1.0.130.tar.gz"
+TARBALL_SYSREPO="sysrepo-1.4.2.tar.gz"
+TARBALL_LIBNETCONF2="libnetconf2-1.1.7.tar.gz"
+TARBALL_NETOPEER2="Netopeer2-1.1.7.tar.gz"
+
+F_PATCH_SYSREPO="${PATH_SYSREPO}/sysrepo-1.4.2.patch"
+F_PATCH_LIBNETCONF2="${PATH_LIBNETCONF2}/libnetconf2-1.1.7.patch"
+
+DIR_LIBYANG="libyang-1.0.130"
+DIR_SYSREPO="sysrepo-1.4.2"
+DIR_LIBNETCONF2="libnetconf2-1.1.7"
+DIR_NETOPEER2="Netopeer2-1.1.7"
+ReleaseAt20200203
+
+
+
+: <<'DevelVersion'
+TARBALL_LIBYANG="libyang-1.0.157-devel.tar.gz"
+TARBALL_SYSREPO="sysrepo-1.4.37-devel.tar.gz"
+TARBALL_LIBNETCONF2="libnetconf2-1.1.18-devel.tar.gz"
+TARBALL_NETOPEER2="Netopeer2-1.1.20-devel-server.tar.gz"
+
+F_PATCH_SYSREPO="${PATH_SYSREPO}/sysrepo-1.4.37-devel.patch"
+F_PATCH_LIBNETCONF2="${PATH_LIBNETCONF2}/libnetconf2-1.1.18-devel.patch"
+
+DIR_LIBYANG="libyang-1.0.157-devel"
+DIR_SYSREPO="sysrepo-1.4.37-devel"
+DIR_LIBNETCONF2="libnetconf2-1.1.18-devel"
+DIR_NETOPEER2="Netopeer2-1.1.20-devel-server"
+DevelVersion
+#############################################################
 
 I_01_LIBYANG_BUILD="ENABLE"
 I_02_SYSREPO_BUILD="ENABLE"
 I_02_SYSREPO_EXAMPLE_COPY="ENABLE"
 I_03_LIBNETCONF2_BUILD="ENABLE"
 I_04_NETOPEER2_BUILD="ENABLE"
+I_05_CPU_CORES="$(grep processor /proc/cpuinfo | wc -l)"
+if [ -n "${I_05_CPU_CORES}" ]; then
+    I_MAKE_J_CMD="make -j${I_05_CPU_CORES}"
+else
+    I_MAKE_J_CMD="make"
+fi
 
 
 GEN_I_EXP_YANG_FILE="./examples/building@2018-01-22.yang"
@@ -119,19 +180,23 @@ pkg_config_path
 #01_libyang
 if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
 
-	printf "${PATH_LIBYANG} \n"
+	printf "\n\n ihung-BUILDING ${PATH_LIBYANG} \n"
 	rm -fr "${PATH_LIBYANG}/${DIR_LIBYANG}"
 
 	cd ${PATH_LIBYANG}
 	tar -zxvf ./${TARBALL_LIBYANG}
 	mkdir -p ${DIR_LIBYANG}/build
 	pushd ${DIR_LIBYANG}/build
+
 	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_VERBOSE_MAKEFILE=ON \
 	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} \
 	-DGEN_LANGUAGE_BINDINGS=ON \
 	-DGEN_CPP_BINDINGS=ON \
 	-DGEN_PYTHON_BINDINGS=ON ..
-	make
+
+    #eval ${I_MAKE_J_CMD}
+    make
 	make install
 	popd
 
@@ -141,7 +206,7 @@ fi
 #02_sysrepo
 if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 
-	printf "${PATH_SYSREPO} \n"
+	printf "\n\n ihung-BUILDING ${PATH_SYSREPO} \n"
 	rm -fr "${PATH_SYSREPO}/${DIR_SYSREPO}"
 
 	cd ${PATH_SYSREPO}
@@ -154,10 +219,13 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	pushd ${DIR_SYSREPO}
 	patch -p2 < ${F_PATCH_SYSREPO}
 	popd
+    #############################################################
 	
 	mkdir -p ${DIR_SYSREPO}/build
 	pushd ${DIR_SYSREPO}/build
+
 	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_VERBOSE_MAKEFILE=ON \
 	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} \
 	-DCMAKE_INCLUDE_PATH=${INSTALL_APP_DIR}/include \
 	-DCMAKE_LIBRARY_PATH=${INSTALL_APP_DIR}/lib \
@@ -166,8 +234,11 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	-DGEN_LANGUAGE_BINDINGS=ON \
 	-DGEN_CPP_BINDINGS=ON \
 	-DGEN_PYTHON_BINDINGS=ON \
+    -DPLUGINS_PATH=$(INSTALL_APP_DIR)/sysrepo-plugind/plugins \
 	-DREPOSITORY_LOC=${INSTALL_APP_DIR} -DREPO_PATH=${INSTALL_APP_DIR} ..
-	make
+
+    #eval ${I_MAKE_J_CMD}
+    make
 	make install
 	if [ "${I_02_SYSREPO_EXAMPLE_COPY}" = "ENABLE" ]; then
 		mkdir -p ${INSTALL_APP_DIR}/sysrepo_examples
@@ -187,15 +258,35 @@ fi
 #03_libnetconf2
 if [ "${I_03_LIBNETCONF2_BUILD}" = "ENABLE" ]; then
 
-	printf "${PATH_LIBNETCONF2} \n"
+	printf "\n\n ihung-BUILDING ${PATH_LIBNETCONF2} \n"
 	rm -fr "${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}"
 
 	cd ${PATH_LIBNETCONF2}
 	tar -zxvf ./${TARBALL_LIBNETCONF2}
+
+	#############################################################
+	# patching
+	pushd ${DIR_LIBNETCONF2}
+	patch -p2 < ${F_PATCH_LIBNETCONF2}
+	popd
+    #############################################################
+
 	mkdir -p ${DIR_LIBNETCONF2}/build
 	pushd ${DIR_LIBNETCONF2}/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
-	make
+
+	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_VERBOSE_MAKEFILE=ON \
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR}  \
+	-DCMAKE_INCLUDE_PATH=${INSTALL_APP_DIR}/include \
+	-DCMAKE_LIBRARY_PATH=${INSTALL_APP_DIR}/lib \
+	-DLIBYANG_INCLUDE_DIR=${INSTALL_APP_DIR}/include \
+	-DLIBYANG_LIBRARY=${INSTALL_APP_DIR}/lib/libyang.so \
+    -DENABLE_SSH=ON \
+    -DENABLE_TLS=ON \
+	-DENABLE_PYTHON=ON ..
+
+    #eval ${I_MAKE_J_CMD}
+    make
 	make install
 	popd
 
@@ -205,32 +296,51 @@ fi
 #04_Netopeer2
 if [ "${I_04_NETOPEER2_BUILD}" = "ENABLE" ]; then
 
-	printf "${PATH_NETOPEER2} \n"
+	printf "\n\n ihung-BUILDING ${PATH_NETOPEER2} \n"
 	rm -fr "${PATH_NETOPEER2}/${DIR_NETOPEER2}"
 
 	cd ${PATH_NETOPEER2}
 	tar -zxvf ./${TARBALL_NETOPEER2}
 
 
-	#server
-	mkdir -p ${DIR_NETOPEER2}/server/build
-	pushd ${DIR_NETOPEER2}/server/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
-	make
-	make install
-	popd
-	#copy server scripts
-	cp ./${DIR_NETOPEER2}/server/*.sh ${INSTALL_APP_DIR}/bin
-	chmod +x ${INSTALL_APP_DIR}/bin/*.sh
-	ldconfig_update
+	#server and cli 
+	mkdir -p ${DIR_NETOPEER2}/build
+	pushd ${DIR_NETOPEER2}/build
 
-	#cli
-	mkdir -p ${DIR_NETOPEER2}/cli/build
-	pushd ${DIR_NETOPEER2}/cli/build
-	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
-	make
+	cmake -DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DINSTALL_MODULES=OFF   \
+    -DGENERATE_HOSTKEY=OFF  \
+    -DMERGE_LISTEN_CONFIG=OFF \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
+
+    #eval ${I_MAKE_J_CMD}
+    make
 	make install
 	popd
 	ldconfig_update
 fi
 
+# Prepare and listing all *.py examples
+mkdir -p /python_examples_NEW
+find /root/netopeer2-all-build -name "*.py" >  /python_examples_NEW/00_FILE-LIST.txt
+printf "\n\n Created date:   "              >> /python_examples_NEW/00_FILE-LIST.txt
+date                                        >> /python_examples_NEW/00_FILE-LIST.txt
+find /root/netopeer2-all-build -name "*.py"  | xargs -I {} cp -u {} /python_examples_NEW
+chmod +x /python_examples_NEW/*.py
+
+# copy SWIG bindings definitation (SWIG interface file, the .i file)
+mkdir -p /python_bindings
+pushd /root/netopeer2-all-build
+find  ./ -name "*.i" >  /python_bindings/00_FILE-LIST.txt
+printf "\n\n Created date:   "              >> /python_bindings/00_FILE-LIST.txt
+date                                        >> /python_bindings/00_FILE-LIST.txt
+find ./ -name "*.i" | xargs -I {}  dirname {}  > /python_bindings/dirname
+pushd /python_bindings/
+awk '{print $1}' /python_bindings/dirname | xargs -I {} mkdir -p {}
+rm -f /python_bindings/dirname
+popd
+find ./ -name "*.i" | xargs -I {} cp {}  "/python_bindings/{}"
+popd
+
+cp -r /root/netopeer2-all-build/05_yang_data_python-hooks/* ${INSTALL_APP_DIR}/

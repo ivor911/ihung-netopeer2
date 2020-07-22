@@ -6,7 +6,7 @@ I_ARCH="`uname -m`"
 MYTAG="${I_ARCH}"
 MYDOCKER_NAME="ihung-netopeer2"
 MYDOCKER_NAME="ihung-netopeer2"
-MYDOCKER_HOSTNAME="rbbn-docker-"
+MYDOCKER_HOSTNAME="ihung-np2-docker-"
 
 case "$I_ARCH" in
     x86_64)

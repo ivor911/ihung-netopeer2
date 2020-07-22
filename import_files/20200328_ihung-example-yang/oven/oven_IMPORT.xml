@@ -1,0 +1,4 @@
+<oven xmlns="urn:sysrepo:oven">
+    <turned-on>true</turned-on>
+    <temperature>200</temperature>
+</oven>

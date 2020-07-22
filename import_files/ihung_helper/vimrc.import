@@ -1,0 +1,17 @@
+syntax on
+filetype on
+set paste
+set ruler
+set nu
+set sw=4 ts=4 sts=4
+set expandtab
+set linebreak
+set hlsearch
+set smartindent
+
+if has("autocmd")
+    au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+      \| exe "normal g'\"" | endif
+    autocmd BufRead,BufNewFile   *.yang setlocal ts=2 sts=2 sw=2 expandtab
+endif
+

@@ -1,0 +1,16 @@
+<turing-machine xmlns="http://example.net/turing-machine">
+<transition-function>
+  <delta>
+    <label>left summard</label>
+    <input>
+      <state>000</state>
+      <symbol>0</symbol>
+    </input>
+    <output>
+      <state>000</state>
+      <symbol>0</symbol>
+      <head-move>right</head-move>
+    </output>
+  </delta>
+</transition-function>
+</turing-machine>

@@ -1,0 +1,3 @@
+Default sysrepo YANG schema path.
+Sysrepo will keep a YANG schema copys which loaded into share memory in this path,
+so we keep this directory empty at first.

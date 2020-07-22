@@ -1,0 +1,12 @@
+diff -Naur ./sysrepo-1.4.2/CMakeLists.txt ./sysrepo-1.4.2.PATCH/CMakeLists.txt
+--- ./sysrepo-1.4.2/CMakeLists.txt	2020-02-04 18:23:24.000000000 +0800
++++ ./sysrepo-1.4.2.PATCH/CMakeLists.txt	2020-04-11 13:27:53.374496329 +0800
+@@ -106,7 +106,7 @@
+     if(CMAKE_BUILD_TYPE_LOWER STREQUAL debug)
+         set(REPO_PATH "${CMAKE_BINARY_DIR}/repository")
+     else()
+-        set(REPO_PATH "/etc/sysrepo")
++		set(REPO_PATH "/netconf-yang")
+     endif()
+ endif()
+ set(REPO_PATH "${REPO_PATH}" CACHE PATH "Repository path, contains configuration schema and data files.")

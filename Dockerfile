@@ -27,7 +27,9 @@ RUN ./ubuntu1804-prepare.sh
 
 
 WORKDIR /root/netopeer2-all-build/
-RUN ./build-all.sh
+#RUN ./build-all.sh
+RUN ./build-all.sh 2>&1 | tee --append build-all.LOG
+
 
 
 ########################################################################################################## 
@@ -46,13 +48,18 @@ ENV IGID=22345
 
 RUN apt-get update && apt-get install -y curl libprotobuf-c-dev libev-dev libavl-dev libssh-dev python python-pip python3 python3-pip
 RUN apt-get update && apt-get install -y supervisor
+RUN apt-get update && apt-get install -y vim openssh-client less tree net-tools iproute2 iputils-ping tmux
 
 COPY --from=intermediate "$INSTALL_APP_DIR"                         "$INSTALL_APP_DIR"
-COPY --from=intermediate /usr/lib/python3/dist-packages/_yang.so    /usr/lib/python3/dist-packages/_yang.so
-COPY --from=intermediate /usr/lib/python3/dist-packages/yang.py     /usr/lib/python3/dist-packages/yang.py
-COPY --from=intermediate /usr/lib/python3/dist-packages/_sysrepo.so /usr/lib/python3/dist-packages/_sysrepo.so
-COPY --from=intermediate /usr/lib/python3/dist-packages/sysrepo.py  /usr/lib/python3/dist-packages/sysrepo.py
-COPY --from=intermediate /etc/ld.so.conf.d/ld-"$APP_NAME".conf      /etc/ld.so.conf.d/ld-"$APP_NAME".conf
+COPY --from=intermediate /usr/lib/python3/dist-packages/_yang.so                 /usr/lib/python3/dist-packages/
+COPY --from=intermediate /usr/lib/python3/dist-packages/yang.py                  /usr/lib/python3/dist-packages/
+COPY --from=intermediate /usr/lib/python3/dist-packages/_sysrepo.so              /usr/lib/python3/dist-packages/
+COPY --from=intermediate /usr/lib/python3/dist-packages/sysrepo.py               /usr/lib/python3/dist-packages/
+#netconf2.cpython-36m-x86_64-linux-gnu.so
+COPY --from=intermediate /usr/lib/python3/dist-packages/netconf2.cpython*.so     /usr/lib/python3/dist-packages/
+#netconf2-1.1.3.egg-info or netconf2-1.1.7.egg-info
+COPY --from=intermediate /usr/lib/python3/dist-packages/netconf2-*.egg-info      /usr/lib/python3/dist-packages/
+COPY --from=intermediate /etc/ld.so.conf.d/ld-"$APP_NAME".conf                   /etc/ld.so.conf.d/ld-"$APP_NAME".conf
 RUN ldconfig
 RUN mkdir -p "$INSTALL_APP_DIR"/lib/sysrepo/plugins/
 
@@ -66,44 +73,30 @@ RUN mkdir -p /root/.ssh; \
 	mkdir -p /run/sshd
 
 COPY ./netopeer2-all-build/.netopeer2-cli /root/.netopeer2-cli
-COPY ./keys/rbbn-id_rsa.pub     /root/.ssh/authorized_keys
-COPY ./keys/rbbn-id_rsa.pub     /root/.ssh/id_rsa.pub
-COPY ./keys/rbbn-id_rsa.pub.pem /root/.ssh/id_rsa.pub.pem
-COPY ./keys/rbbn-id_rsa         /root/.ssh/id_rsa
-RUN \
-     chown -R  root:root /root/.ssh ; \
-     chmod 700 /root/.ssh ; \
-     chmod 664 /root/.ssh/authorized_keys; \
-     chmod 600 /root/.ssh/id_rsa; \
-     chmod 600 /root/.ssh/id_rsa.pub; \
-     chmod 600 /root/.ssh/id_rsa.pub.pem
 
 RUN groupadd --gid "$IGID" "$IGROUP" ;\
     useradd -s /bin/bash -m -G adm,sudo --gid "$IGID" --uid "$IUID" "$IUSER"; \
-    echo "rbbn:Az!23456" | chpasswd ; \
+    echo 'rbbn:Az!23456' | chpasswd ; \
+    echo 'root:Az!23456' | chpasswd ; \
     mkdir -p /home/rbbn/.ssh ; \
 	mkdir -p /home/rbbn/.netopeer2-cli
 
 COPY ./netopeer2-all-build/.netopeer2-cli /home/rbbn/.netopeer2-cli
-COPY ./keys/rbbn-id_rsa.pub     /home/rbbn/.ssh/authorized_keys
-COPY ./keys/rbbn-id_rsa.pub     /home/rbbn/.ssh/id_rsa.pub
-COPY ./keys/rbbn-id_rsa.pub.pem /home/rbbn/.ssh/id_rsa.pub.pem
-COPY ./keys/rbbn-id_rsa         /home/rbbn/.ssh/id_rsa
 
 RUN \
-     chown -R rbbn:rbbn /home/rbbn ; \
-     chmod 700 /home/rbbn/.ssh ; \
-     chmod 664 /home/rbbn/.ssh/authorized_keys; \
-     chmod 600 /home/rbbn/.ssh/id_rsa; \
-     chmod 600 /home/rbbn/.ssh/id_rsa.pub; \
-     chmod 600 /home/rbbn/.ssh/id_rsa.pub.pem
+     chown -R rbbn:rbbn /home/rbbn
 
 ########################################################################################################## 
 # setup netconf/yang
 #COPY setup.sh "$INSTALL_APP_DIR"/bin/
 #RUN bash "$INSTALL_APP_DIR"/bin/setup.sh "$INSTALL_APP_DIR"/bin/sysrepoctl /netconf-yang/yang root
-RUN bash "$INSTALL_APP_DIR"/bin/merge_hostkey.sh "$INSTALL_APP_DIR"/bin/sysrepocfg openssl
-RUN bash "$INSTALL_APP_DIR"/bin/merge_config.sh  "$INSTALL_APP_DIR"/bin/sysrepocfg genkey
+RUN rm -fr /dev/shm/sr_*
+RUN rm -f  "$INSTALL_APP_DIR"/sr_main_lock
+RUN rm -fr "$INSTALL_APP_DIR"/data
+RUN rm -fr "$INSTALL_APP_DIR"/yang
+RUN "$INSTALL_APP_DIR"/scripts/pre-setup.sh    "$INSTALL_APP_DIR"/
+RUN "$INSTALL_APP_DIR"/scripts/load-default.sh "$INSTALL_APP_DIR"/
+#RUN "$INSTALL_APP_DIR"/bin/sysrepocfg -C startup -d running -m rbbn-nos-host
 
 ########################################################################################################## 
 # Copy import and ctrl files
@@ -112,10 +105,18 @@ RUN mkdir -p /import_files ; \
 COPY ./import_files                                    /import_files
 COPY ./import_files/ihung_call-sr_get_items_example.sh /netconf-yang/sysrepo_examples
 COPY ./import_files/ihung_monitor.sh                   /netconf-yang/sysrepo_examples
-COPY ./ctrl /ctrl
+COPY ./ctrl                                            /ctrl
+COPY --from=intermediate /python_examples_NEW  /import_files/python_examples_NEW
+COPY --from=intermediate /python_bindings      /import_files/python_bindings
 RUN touch /root/.bashrc \
- && cat /import_files/bashrc.import >> /root/.bashrc
+ && cat /import_files/bashrc.import >> /root/.bashrc \
+ && cat /import_files/ihung_helper/vimrc.import >> /root/.vimrc \
+ && cp -r /import_files/ihung_helper/vim /root/.vim
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+COPY --from=intermediate /root/netopeer2-all-build/build-all.LOG /build-all.LOG
 #CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]
 
+### for develop
+RUN "$INSTALL_APP_DIR"/scripts/Netopeer2GUI_install.sh

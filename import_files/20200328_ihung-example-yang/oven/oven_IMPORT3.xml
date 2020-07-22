@@ -1,0 +1,18 @@
+<oven xmlns="urn:sysrepo:oven">
+    <turned-on>true</turned-on>
+    <temperature>200</temperature>
+    <Interface-Name>eth0</Interface-Name>
+    <Interface-Enable>true</Interface-Enable>
+    <Hostname>oven-ihung2500000</Hostname>
+    <Static-IP-Address-List>
+        <IP-Address-Index>1</IP-Address-Index>
+        <IP-Address>192.168.1.60</IP-Address>
+        <IP-Address-Prefix>192.168.1.0/24</IP-Address-Prefix>
+        <Default-Gateway>192.168.1.254</Default-Gateway>
+    </Static-IP-Address-List>
+        <Static-IP-Address-List>
+        <IP-Address-Index>2</IP-Address-Index>
+        <IP-Address>192.168.2.60</IP-Address>
+        <IP-Address-Prefix>192.168.2.0/24</IP-Address-Prefix>
+    </Static-IP-Address-List>
+</oven>

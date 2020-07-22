@@ -1,0 +1,12 @@
+diff -Naur ./libnetconf2-1.1.3/python/setup.py.in ./libnetconf2-1.1.3.PATCH/python/setup.py.in
+--- ./libnetconf2-1.1.3/python/setup.py.in	2019-12-13 14:20:48.000000000 +0000
++++ ./libnetconf2-1.1.3.PATCH/python/setup.py.in	2020-04-10 10:05:14.020870570 +0000
+@@ -12,6 +12,8 @@
+                                     "${CMAKE_CURRENT_SOURCE_DIR}/session.h",
+                                     "${CMAKE_CURRENT_COURCE_DIR}/rpc.h"
+                                    ],
++                           include_dirs=["${CMAKE_INCLUDE_PATH}"],
++                           library_dirs=["${CMAKE_LIBRARY_PATH}", "${CMAKE_CURRENT_BINARY_DIR}", "${CMAKE_CURRENT_BINARY_DIR}/.."],
+                            libraries=["netconf2"],
+                            extra_compile_args=["-Wall", "-I${CMAKE_CURRENT_BINARY_DIR}" @SSH_DEFINE@ @TLS_DEFINE@],
+                            extra_link_args=["-L${CMAKE_CURRENT_BINARY_DIR}/.."],
