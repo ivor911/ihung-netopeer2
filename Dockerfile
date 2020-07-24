@@ -119,4 +119,4 @@ COPY --from=intermediate /root/netopeer2-all-build/build-all.LOG /build-all.LOG
 #CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]
 
 ### for develop
-RUN "$INSTALL_APP_DIR"/scripts/Netopeer2GUI_install.sh
+RUN "$INSTALL_APP_DIR"/scripts/Netopeer2GUI_install.sh 2>&1 | tee --append Netopeer2GUI_install.sh.LOG
