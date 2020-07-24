@@ -53,7 +53,7 @@ virtualenv venv --system-site-packages -p python3
 source venv/bin/activate
 pip3 install --upgrade pip
 #pip3 install -r backend/requirements.txt
-apt-get remove -y python3-wheel python3-cffi
+apt-get remove -y python3-wheel python3-cffi-backend
 pip3 install -r backend/requirements.new.txt
 deactivate
 cd frontend
