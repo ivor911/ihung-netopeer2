@@ -199,6 +199,14 @@ if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
 
 	cd ${PATH_LIBYANG}
 	tar -zxvf ./${TARBALL_LIBYANG}
+
+	#############################################################
+	# patching
+	pushd ${DIR_LIBYANG}
+	patch -p2 < ${F_PATCH_LIBYANG}
+	popd
+    #############################################################
+
 	mkdir -p ${DIR_LIBYANG}/build
 	pushd ${DIR_LIBYANG}/build
 
