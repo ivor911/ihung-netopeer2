@@ -10,10 +10,24 @@ set -x
 # In root
 
 # tools
-apt-get update
-apt-get update ;apt-get install vim openssh-client less tree net-tools iproute2 iputils-ping tmux -y
-apt-get install -y pkg-config git cmake clang libpcre3-dev python3-dev swig libssh-4 libssh-dev libssl-dev libssl-doc zlib1g-dev libprotobuf-c-dev protobuf-c-compiler libavl-dev libev-dev
+apt-get update -y
+apt-get install -y vim openssh-client less tree net-tools iproute2 iputils-ping tmux
+apt-get install -y mongodb python3 python3-dev python3-pip
+apt-get install -y pkg-config
+apt-get install -y git cmake clang curl
+apt-get install -y libpcre3-dev swig
+apt-get install -y zlib1g-dev libgcrypt-dev libssl-dev
+apt-get install -y libprotobuf-c-dev protobuf-c-compiler libavl-dev libev-dev
+apt-get install -y libffi-dev python3-setuptools nginx
 
+#curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
+
+# Install libssh from source (Version from apt is incompatible with libnetconf2)
+git clone -b stable-0.8 http://git.libssh.org/projects/libssh.git
+mkdir -p ./libssh/build
+pushd ./libssh/build
+cmake ..; make; make install
+popd
 
 # Already install NETCONF/YANG 4 packages?
 ldconfig
@@ -26,6 +40,7 @@ fi
 #tools_npm
 # apt-get install -y python3-pip virtualenv nodejs npm
 apt-get install -y python3-pip virtualenv nodejs libssl1.0-dev  nodejs-dev node-gyp npm
+apt-get install -y virtualenv
 
 # if under docker
 [ -f /.dockerenv ] && npm config set unsafe-perm true
@@ -37,6 +52,7 @@ ln -fs /usr/local/bin/npx /usr/bin/npx
 ln -fs /bin/bash /bin/sh
 
 
+# Prepare GUI 
 #liberoutergui 
 cd /
 rm -rf /liberouter-gui
@@ -63,9 +79,11 @@ npm install --unsafe-perm
 cd ../..
 
 # tools_ssl
-apt-get install -y libssh-4 libssh-dev libssl-dev libssl-doc zlib1g-dev 
+#apt-get install -y libssl-dev libssl-doc zlib1g-dev 
+apt-get remove libssh-4 -y
 
 apt-get clean
+apt-get autoremove -y 
 # backend 
 :<<'BACKEND'
 cd /liberouter-gui

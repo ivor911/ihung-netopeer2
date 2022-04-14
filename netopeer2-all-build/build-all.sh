@@ -10,7 +10,23 @@ PATH_NETOPEER2="${PATH_PWD}/04_netopeer2"
 
 
 #############################################################
-#: <<'ReleaseAt20200721'
+#: <<'ReleaseAt20210602'
+TARBALL_LIBYANG=libyang-1.0.240.tar.gz
+TARBALL_SYSREPO=sysrepo-1.4.140.tar.gz
+TARBALL_LIBNETCONF2=libnetconf2-1.1.46.tar.gz
+TARBALL_NETOPEER2=netopeer2-1.1.76.tar.gz
+DIR_LIBYANG=libyang-1.0.240
+DIR_SYSREPO=sysrepo-1.4.140
+DIR_LIBNETCONF2=libnetconf2-1.1.46
+DIR_NETOPEER2=netopeer2-1.1.76
+F_PATCH_LIBYANG=${PATH_LIBYANG}/${DIR_LIBYANG}.patch
+F_PATCH_SYSREPO=${PATH_SYSREPO}/${DIR_SYSREPO}.patch
+F_PATCH_LIBNETCONF2=${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}.patch
+F_PATCH_NETOPEER2=${PATH_NETOPEER2}/${DIR_NETOPEER2}.patch
+#ReleaseAt20210602
+#############################################################
+
+: <<'ReleaseAt20200721'
 TARBALL_LIBYANG=libyang-1.0.184.tar.gz
 TARBALL_SYSREPO=sysrepo-1.4.70.tar.gz
 TARBALL_LIBNETCONF2=libnetconf2-1.1.26.tar.gz
@@ -23,8 +39,7 @@ F_PATCH_LIBYANG=${PATH_LIBYANG}/${DIR_LIBYANG}.patch
 F_PATCH_SYSREPO=${PATH_SYSREPO}/${DIR_SYSREPO}.patch
 F_PATCH_LIBNETCONF2=${PATH_LIBNETCONF2}/${DIR_LIBNETCONF2}.patch
 F_PATCH_NETOPEER2=${PATH_NETOPEER2}/${DIR_NETOPEER2}.patch
-#ReleaseAt20200721
-#############################################################
+ReleaseAt20200721
 
 : <<'ReleaseAt20200507withNetopeer2Update'
 TARBALL_LIBYANG=libyang-1.0.167.tar.gz
@@ -201,10 +216,10 @@ if [ "${I_01_LIBYANG_BUILD}" = "ENABLE" ]; then
 	tar -zxvf ./${TARBALL_LIBYANG}
 
 	#############################################################
-	# patching
-	pushd ${DIR_LIBYANG}
-	patch -p2 < ${F_PATCH_LIBYANG}
-	popd
+	# patching/No need in ReleaseAt20210602.
+	# pushd ${DIR_LIBYANG}
+	# patch -p2 < ${F_PATCH_LIBYANG}
+	# popd
     #############################################################
 
 	mkdir -p ${DIR_LIBYANG}/build
@@ -265,8 +280,10 @@ if [ "${I_02_SYSREPO_BUILD}" = "ENABLE" ]; then
 	if [ "${I_02_SYSREPO_EXAMPLE_COPY}" = "ENABLE" ]; then
 		mkdir -p ${INSTALL_APP_DIR}/sysrepo_examples
 		cp ./examples/*_example			${INSTALL_APP_DIR}/sysrepo_examples
-		cp ./examples/liboven.so		${INSTALL_APP_DIR}/lib
-		cp ../examples/examples.yang	${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/*.yang	        ${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/*.xml		        ${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/*.so		        ${INSTALL_APP_DIR}/sysrepo_examples
+		cp ./examples/*.so		        ${INSTALL_APP_DIR}/lib
 		generate_myexamples
 		cp ${GEN_I_EXP_YANG_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
 		cp ${GEN_I_EXP_XML_FILE}				${INSTALL_APP_DIR}/sysrepo_examples
@@ -334,7 +351,11 @@ if [ "${I_04_NETOPEER2_BUILD}" = "ENABLE" ]; then
     -DINSTALL_MODULES=OFF   \
     -DGENERATE_HOSTKEY=OFF  \
     -DMERGE_LISTEN_CONFIG=OFF \
-    -DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR} ..
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_APP_DIR}  \
+	-DCMAKE_INCLUDE_PATH=${INSTALL_APP_DIR}/include \
+	-DCMAKE_LIBRARY_PATH=${INSTALL_APP_DIR}/lib \
+	-DLIBYANG_INCLUDE_DIR=${INSTALL_APP_DIR}/include \
+	-DLIBYANG_LIBRARY=${INSTALL_APP_DIR}/lib/libyang.so ..
 
     #eval ${I_MAKE_J_CMD}
     make
