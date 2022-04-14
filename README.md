@@ -45,9 +45,10 @@ root@ihung-netopeer2-docker:# /netconf-yang/scripts/start-netconf2.sh
 
 # Start Netopeer2GUI in docker
 root@ihung-netopeer2-docker:# /netconf-yang/scripts/start-Netopeer2GUI.sh
-# Then run command, 'netstat -tlunp | grep 4200' to check ng serve(web froentend) listen on port 4200
+
 # Then run command, 'netstat -tlunp | grep 5555' to check python3(web backend)  listen on port 830
 
+# Then run command, 'netstat -tlunp | grep 4200' to check ng serve(web froentend) listen on port 4200
 # Then open your browser and access http://[Your Docker IP]:4200
 ```
 
