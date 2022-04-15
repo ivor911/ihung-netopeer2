@@ -1,4 +1,4 @@
-# Build docker image from github source #
+# Build docker image from github source on x86_64 #
 
 ./00_build-docker-image.sh x86_64
 
@@ -34,6 +34,7 @@ root@ihung-netopeer2-docker:# /netconf-yang/scripts/start-Netopeer2GUI.sh
 
 # Then open your browser and access http://[Your Docker IP]:4200
 ```
+# Build docker image from github source on aarch64#
 
 ./00_build-docker-image.sh aarch64
 
