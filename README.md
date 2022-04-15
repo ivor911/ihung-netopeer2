@@ -2,12 +2,19 @@
 
 ./00_build-docker-image.sh x86_64
 
-./00_build-docker-image.sh aarch64
-
-
 # Run docker image: ihung-netopeer2:latest #
 
-Run netopeer2 docker image on x86_64
+Run netopeer2 docker image on x86_64 latest version
+```
+docker run -dp 80:80 netopeer2gui
+
+#and navigate to http://localhost in your browser.
+```
+
+
+# Run docker image: ihung-netopeer2:x86_64-old-ok #
+
+Run netopeer2 docker image on x86_64 old ok version
 ```
 $ docker pull ivor911/ihung-netopeer2:latest
 $ docker run -dit --privileged --net=host --hostname=ihung-netopeer2-docker --name ihung-netopeer2-docker ivor911/ihung-netopeer2:latest
@@ -28,7 +35,9 @@ root@ihung-netopeer2-docker:# /netconf-yang/scripts/start-Netopeer2GUI.sh
 # Then open your browser and access http://[Your Docker IP]:4200
 ```
 
-# Run docker image: ihung-netopeer2:aarch64-latest #
+./00_build-docker-image.sh aarch64
+
+# Run docker image: ihung-netopeer2:aarch64-old-ok #
 
 Run netopeer2 docker image on arm64
 ```
@@ -51,6 +60,4 @@ root@ihung-netopeer2-docker:# /netconf-yang/scripts/start-Netopeer2GUI.sh
 # Then run command, 'netstat -tlunp | grep 4200' to check ng serve(web froentend) listen on port 4200
 # Then open your browser and access http://[Your Docker IP]:4200
 ```
-
-
 
