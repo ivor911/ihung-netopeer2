@@ -51,8 +51,6 @@ RUN apt-get update -y && apt-get install -y \
    libffi-dev python3-setuptools nginx
 
 
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
-
 # Install libssh from source (Version from apt is incompatible with libnetconf2)
 #RUN tar xf /root/netopeer2-all-build/libssh.stable-0.8.tar.gz; cd libssh; mkdir build; cd build ;\
 #   cmake ..; make; make install ; cd /
@@ -63,7 +61,8 @@ RUN git clone -b stable-0.8 http://git.libssh.org/projects/libssh.git ; cd libss
 ########################################################################################################## 
 #Build CESNET-NETCONF
 WORKDIR /root/netopeer2-all-build/
-RUN ./build-all.sh 2>&1 | tee --append build-all.LOG
+RUN ./build-all.sh 2>&1 | tee --append build-all.LOG ;\
+    cp build-all.LOG /build-all.LOG
 
 ########################################################################################################## 
 # Copy import and ctrl files
@@ -90,72 +89,14 @@ RUN rm -fr /dev/shm/sr_* \
 	&& rm -f  "$INSTALL_APP_DIR"/sr_main_lock \
 	&& rm -fr "$INSTALL_APP_DIR"/data \
 	&& rm -fr "$INSTALL_APP_DIR"/yang \
-	&& cp "$INSTALL_APP_DIR"/scripts/pre-setup.sh    "$INSTALL_APP_DIR"/ \
-	&& cp "$INSTALL_APP_DIR"/scripts/load-default.sh "$INSTALL_APP_DIR"/ 
-#RUN "$INSTALL_APP_DIR"/bin/sysrepocfg -C startup -d running -m rbbn-nos-host
-
-
-# Prepare GUI
-#RUN unzip /root/netopeer2-all-build/liberouter-gui-master.zip -d / ; mv /liberouter-gui-master /liberouter-gui
-#RUN unzip /root/netopeer2-all-build/Netopeer2GUI-2.zip -d /liberouter-gui/modules ; mv /liberouter-gui/modules/Netopeer2GUI-2 /liberouter-gui/modules/netopeer2gui
-WORKDIR /
-RUN git clone https://github.com/CESNET/liberouter-gui
-RUN cd /liberouter-gui/modules && git clone -b v2 https://github.com/CESNET/netopeer2gui 
-# && rm -rf /liberouter-gui/modules/example
-RUN cp /liberouter-gui/modules/netopeer2gui/app.config.json /liberouter-gui/modules/app.config.json && rm /liberouter-gui/modules/netopeer2gui/app.config.json
-RUN cd /liberouter-gui && python3 bootstrap.py && \
-    pip3 install -r backend/requirements.txt && \
-    cd frontend && npm install -g npm@7.5.2 && \
-    npm i -g @angular/cli && npm install --legacy-peer-deps
-
-# Temporary workaround until import is fixed for tools
-RUN rm /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss && \
-  cp /liberouter-gui/frontend/src/styles/_colors.scss /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss
-RUN echo "\$colorSuccess:     #44bd32;" >> /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss && \
-    echo "\$colorError:       #ee1d23;" >> /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss
-
-# Build GUI
-RUN cd /liberouter-gui/modules/netopeer2gui/frontend && npm i && npm run build:tools && cd
-RUN cd /liberouter-gui/frontend && npm run build && cp -R dist/* /var/www/html 
-
-# Setup ngix server with uwsgi
-RUN mkdir -p /var/www/liberouter-gui && cp -r /liberouter-gui/backend /var/www/liberouter-gui
-RUN rm /var/www/liberouter-gui/backend/liberouterapi/modules/netconf && cp -r /liberouter-gui/modules/netopeer2gui/backend/. /var/www/liberouter-gui/backend/liberouterapi/modules/netopeer2gui
-RUN cp /liberouter-gui/modules/netopeer2gui/docker/wsgi.py /var/www/liberouter-gui/backend/wsgi.py
-RUN pip3 install wheel && pip3 install uwsgi; mkdir /uwsgi; chown -R www-data:www-data /uwsgi
-
-#COPY localhost /etc/nginx/sites-available/
-#RUN ln /etc/nginx/sites-available/localhost /etc/nginx/sites-enabled
-#COPY config.ini /var/www/liberouter-gui/backend/config.ini
-#COPY .htaccess /var/www/html/.htaccess
-RUN cp /liberouter-gui/modules/netopeer2gui/docker/demo/localhost /etc/nginx/sites-available/ ;\
-	ln /etc/nginx/sites-available/localhost /etc/nginx/sites-enabled ;\
-	cp /liberouter-gui/modules/netopeer2gui/docker/demo/config.ini /var/www/liberouter-gui/backend/config.ini ;\
-	cp /liberouter-gui/modules/netopeer2gui/docker/demo/.htaccess /var/www/html/.htaccess
-
-RUN chown -R www-data:www-data /var/www/liberouter-gui
-RUN chown -R www-data:www-data /liberouter-gui/modules/netopeer2gui/backend
-# App needs to write configuration files
-RUN chmod -R +w /var/www/liberouter-gui/backend/liberouterapi/modules/netopeer2gui/ ; mkdir -p /var/www/liberouter-gui/backend/liberouterapi/modules/netopeer2gui/userfiles
-RUN rm /etc/nginx/sites-enabled/default
-RUN pip3 install Flask-SocketIO==4.3.2
-
-# Change root password for netconf connection
-# DO NOT USE IN PRODUCTION ENVIRONMENT!
-#RUN echo 'root:docker' | chpasswd
-
-# Expose HTTP
-EXPOSE 80/tcp
-EXPOSE 5555/tcp
-# EXPOSE 830
-
-#COPY services.sh /root
-RUN cp /liberouter-gui/modules/netopeer2gui/docker/demo/services.sh /root
-CMD ["/bin/bash", "/root/services.sh"]
+	&& "$INSTALL_APP_DIR"/scripts/pre-setup.sh    "$INSTALL_APP_DIR"/ \
+	&& "$INSTALL_APP_DIR"/scripts/load-default.sh "$INSTALL_APP_DIR"/ 
 
 
 
 #CMD ["/usr/bin/supervisord","-c","/etc/supervisor/conf.d/supervisord.conf"]
 
-### for develop
-#RUN "$INSTALL_APP_DIR"/scripts/Netopeer2GUI_install.sh 2>&1 | tee --append Netopeer2GUI_install.sh.LOG
+########################################################################################################## 
+# Inststall Netopeer2GUI
+WORKDIR /
+RUN "$INSTALL_APP_DIR"/scripts/Netopeer2GUI_install.sh 2>&1 | tee --append /Netopeer2GUI_install.sh.LOG
