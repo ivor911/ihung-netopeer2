@@ -5,7 +5,8 @@
 
 # Run docker image: ihung-netopeer2:latest #
 
-Run netopeer2 docker image on x86_64 old ok version
+Run netopeer2 docker image x86_64 latest useable version. Existed some hang bugs...
+
 ```
 $ docker pull ivor911/ihung-netopeer2:latest
 $ docker run -dit --privileged --net=host --hostname=ihung-netopeer2-docker --name ihung-netopeer2-docker ivor911/ihung-netopeer2:latest
@@ -47,15 +48,6 @@ root@ihung-netopeer2-docker:# /netconf-yang/scripts/start-Netopeer2GUI.sh
 # Then run command, 'netstat -tlunp | grep 5555' to check python3(web backend)  listen on port 830
 
 # Then open your browser and access http://[Your Docker IP]:4200
-```
-
-# Run docker image: ihung-netopeer2:developing #
-
-Run netopeer2 docker image on x86_64 latest version
-```
-docker run -dp 80:80 netopeer2gui
-
-#and navigate to http://localhost in your browser.
 ```
 
 
